@@ -64,8 +64,13 @@ async function createCustomer(req, res) {
 async function updateCustomer(req, res) {
   const { name, phone, cpf, birthday } = req.body;
   const { id } = req.params;
-  if (!id) return res.sendStatus(404);
 
+  const cpfExists = await connection.query(
+    "SELECT * FROM customers WHERE id = $1;",
+    [id]
+  );
+  if (cpfExists.rowCount == 0) return res.sendStatus(404);
+  if (cpf != cpfExists.rows[0].cpf) return res.sendStatus(409);
   try {
     await connection.query(
       "UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4 WHERE id = $5;",
